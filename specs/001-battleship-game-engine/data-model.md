@@ -206,23 +206,25 @@ Ship (N) ──> (1) Game
 
 ## Validation Summary
 
+> **Note**: This data model references validation rules defined in `spec.md` (FR-018 through FR-021, FR-045 through FR-048). The spec serves as the source of truth for all validation requirements.
+
 ### Game Creation Validation
-- BoardRows: 5-100
-- BoardColumns: 5-100
-- NumPlayers: 1-2
-- Ship placement must succeed within 100 attempts
+- BoardRows: 5-100 (per FR-018, FR-019)
+- BoardColumns: 5-100 (per FR-018, FR-019)
+- NumPlayers: 1-2 (per FR-029)
+- Ship placement must succeed within 100 attempts (per FR-022)
 
 ### Ship Placement Validation
-- Ship length: 1 to min(Rows, Columns)
-- Ship must fit within board boundaries
-- No ship overlap allowed
-- Horizontal OR vertical orientation only
+- Ship length: 1 to min(Rows, Columns) (per FR-020, FR-021)
+- Ship must fit within board boundaries (per FR-021)
+- No ship overlap allowed (per SPR-003)
+- Horizontal OR vertical orientation only (per FR-003)
 
 ### Shot Validation
-- Row: 0 to Rows-1
-- Column: 0 to Columns-1
-- Cell must not be previously targeted
-- Shot must match current player's turn (multiplayer)
+- Row: 0 to Rows-1 (per FR-046)
+- Column: 0 to Columns-1 (per FR-047)
+- Cell must not be previously targeted (per FR-016)
+- Shot must match current player's turn (multiplayer) (per FR-036)
 
 ### Game Stats Validation
 - TotalShots = Sum of ShotsFired for all players

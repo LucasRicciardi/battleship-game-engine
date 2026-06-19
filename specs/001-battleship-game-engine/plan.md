@@ -508,3 +508,11 @@ Dockerfile               # Application container (root level)
 > **Fill ONLY if Constitution Check has violations that must be justified**
 
 No violations - all constitutional principles are achievable with the proposed architecture.
+
+**Clean Architecture Compliance**:
+- **Entities Layer** (`src/models/`): Core business rules (Game, Board, Ship, Player) are framework-independent and contain no external dependencies
+- **Use Cases Layer** (`src/services/`): Application business rules orchestrate Entities without UI/database concerns
+- **Interface Adapters Layer** (`src/adapters/`): Framework-specific code (Gin, GORM) converts data between formats for inner layers
+- **Drivers Layer**: External agencies (database, web framework) are isolated in the outermost layer
+
+**Dependency Rule**: All source code dependencies flow inward only - outer layers depend on inner layers, never vice versa.

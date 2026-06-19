@@ -138,11 +138,11 @@ After completing a game, users want the option to start a new game without resta
 
 **Acceptance Scenarios**:
 
-1. **Given** all ships are sunk, **When** the victory message is displayed, **Then** engine prompts user to play again
+1. **Given** all ships are sunk, **When** the victory message is displayed, **Then** engine prompts user to play again with accepted responses: "yes"/"no", "y"/"n" (case-insensitive)
 
-2. **Given** play again prompt is shown, **When** user confirms, **Then** engine starts a new game with fresh board state
+2. **Given** play again prompt is shown, **When** user confirms ("yes" or "y"), **Then** engine starts a new game with fresh board state
 
-3. **Given** play again prompt is shown, **When** user declines, **Then** engine ends the session and returns control to caller
+3. **Given** play again prompt is shown, **When** user declines ("no" or "n"), **Then** engine ends the session and returns control to caller
 
 4. **Given** a new game is started, **When** startGame() is called, **Then** all previous game state is cleared and fresh ships are placed
 
@@ -164,7 +164,7 @@ After completing a game, users want the option to start a new game without resta
 
 - **EC-007**: When gameStats() is called when no game is active, the engine MUST return a failure response with a descriptive error
 
-- **EC-008**: When ship placement conflicts occur (ships cannot be placed without overlapping), the engine MUST retry up to 100 attempts then fail with a descriptive error
+- **EC-008**: When ship placement conflicts occur (ships overlapping or extending beyond board boundaries), the engine MUST retry up to 100 attempts then fail with a descriptive error indicating the specific conflict type
 
 - **EC-009**: When a player shoots out of turn in multiplayer games, the engine MUST reject with a descriptive error indicating whose turn it is
 
@@ -188,17 +188,17 @@ After completing a game, users want the option to start a new game without resta
 
 - **FR-003**: System MUST randomly place ships in either horizontal or vertical orientation on the board
 
-- **FR-004**: System MUST return ship placement data from startGame() containing all ship positions with complete state (id, type, length, positions, hits, sunk)
+- **FR-004**: System MUST return ship placement data from startGame() containing all ship positions with complete state (id, type, length, positions, hits, sunk) in `data.ships` field of the response
 
 - **FR-005**: System MUST provide a shoot() function that accepts row and column coordinates as parameters
 
-- **FR-006**: System MUST return shot result (hit or miss) from shoot() for each target coordinate
+- **FR-006**: System MUST return shot result (hit or miss) from shoot() for each target coordinate in `data.hit` field of the response
 
 - **FR-007**: System MUST return number of ships remaining (not yet sunk) from shoot()
 
-- **FR-008**: System MUST return updated ship placement data from shoot()
+- **FR-008**: System MUST return updated ship placement data from shoot() in `data.ships` field of the response
 
-- **FR-009**: System MUST return updated hits/misses array from shoot()
+- **FR-009**: System MUST return updated hits/misses array from shoot() in `data.board` field of the response
 
 - **FR-010**: System MUST represent untargeted cells in hits/misses array as space characters
 
@@ -242,7 +242,7 @@ After completing a game, users want the option to start a new game without resta
 
 #### Multiplayer Support
 
-- **FR-029**: System MUST support startGame() with a players parameter (1 or 2)
+- **FR-029**: System MUST support startGame() with a players parameter (1 or 2) that validates input is an integer and rejects non-integer values
 
 - **FR-030**: System MUST create independent board state for each player when players=2
 
@@ -290,9 +290,14 @@ After completing a game, users want the option to start a new game without resta
 
 #### Error Handling
 
-- **FR-049**: System MUST return all operations using success/failure result pattern: `{ success: boolean, data?: ..., error?: ... }` where `error` contains descriptive error information when `success` is `false`
+- **FR-049**: System MUST return all operations using success/failure result pattern: `{ success: boolean, data?: ..., error?: ... }` where `error` contains descriptive error information when `success` is `false`. Error responses MUST include an `error_code` field with standardized error codes (e.g., `INVALID_BOARD_SIZE`, `INVALID_COORDINATES`, `GAME_NOT_FOUND`). Error messages MUST include operation name, invalid parameter name, and suggested recovery action. Error messages MUST NOT include stack traces, file paths, or internal state information.
 
 - **FR-050**: System MUST maintain valid game state after failed operations (no partial updates)
+
+#### Error Response Format
+
+- **Success Response**: `{ success: true, data: { ... }, error: null, error_code: null }`
+- **Failure Response**: `{ success: false, data: null, error: string, error_code: string }`
 
 ### Key Entities
 
@@ -312,17 +317,17 @@ After completing a game, users want the option to start a new game without resta
 
 ### API Response Structures
 
-- **startGame() success**: `{ success: true, data: { ships: Ship[], board: string[][] }, error?: undefined }`
+- **startGame() success**: `{ success: true, data: { ships: Ship[], board: string[][] }, error: null, error_code: null }`
 
-- **startGame() failure**: `{ success: false, data?: undefined, error: string }`
+- **startGame() failure**: `{ success: false, data: null, error: string, error_code: string }`
 
-- **shoot() success**: `{ success: true, data: { hit: boolean, shipSunk?: string, shipsRemaining: number, board: string[][] }, error?: undefined }`
+- **shoot() success**: `{ success: true, data: { hit: boolean, shipSunk?: string, shipsRemaining: number, board: string[][] }, error: null, error_code: null }`
 
-- **shoot() failure**: `{ success: false, data?: undefined, error: string }`
+- **shoot() failure**: `{ success: false, data: null, error: string, error_code: string }`
 
-- **gameStats() success**: `{ success: true, data: GameStats, error?: undefined }`
+- **gameStats() success**: `{ success: true, data: GameStats, error: null, error_code: null }`
 
-- **gameStats() failure**: `{ success: false, data?: undefined, error: string }`
+- **gameStats() failure**: `{ success: false, data: null, error: string, error_code: string }`
 
 ### Ship Placement Rules
 

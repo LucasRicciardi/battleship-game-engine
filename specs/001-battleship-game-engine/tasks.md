@@ -162,8 +162,8 @@
 - [ ] T037 [P] Documentation updates in `docs/api.md` for all endpoints
 - [ ] T038 [P] Code cleanup and refactoring across all layers
 - [ ] T039 [P] Performance optimization for ship placement algorithm in `src/models/ship.go`
-- [ ] T040 [P] Additional unit tests in `tests/unit/` for edge cases (EC-001 through EC-013)
-- [ ] T041 [P] Security hardening: input sanitization and access control review
+- [ ] T040 [P] Additional unit tests in `tests/unit/` for edge cases (EC-001 through EC-013) with explicit test cases for each edge case
+- [ ] T041 [P] Error sanitization middleware in `src/adapters/gin/middleware/errorhandler.go` that sanitizes error messages (no stack traces, file paths, or internal state) and adds `error_code` field to all error responses
 - [ ] T042 Run quickstart.md validation scenarios 1-5
 - [ ] T043 [P] Configure log rotation in `src/lib/logger/logger.go`
 - [ ] T044 [P] Setup Prometheus metrics collection in `src/lib/metrics/metrics.go`

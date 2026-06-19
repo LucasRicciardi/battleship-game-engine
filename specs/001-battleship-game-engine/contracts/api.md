@@ -27,7 +27,8 @@ All API responses follow this consistent format:
 {
   "success": true,
   "data": { ... },
-  "error": null
+  "error": null,
+  "error_code": null
 }
 ```
 
@@ -36,7 +37,8 @@ All API responses follow this consistent format:
 {
   "success": false,
   "data": null,
-  "error": "Descriptive error message"
+  "error": "Descriptive error message",
+  "error_code": "ERROR_CODE_CONSTANT"
 }
 ```
 
@@ -138,7 +140,8 @@ Creates a new Battleship game with the specified configuration.
       [" ", " ", " ", " ", " ", " ", " ", " "]
     ]
   },
-  "error": null
+  "error": null,
+  "error_code": null
 }
 ```
 
@@ -147,7 +150,8 @@ Creates a new Battleship game with the specified configuration.
 {
   "success": false,
   "data": null,
-  "error": "Invalid board size: minimum is 5x5"
+  "error": "Invalid board size: minimum is 5x5",
+  "error_code": "INVALID_BOARD_SIZE"
 }
 ```
 
@@ -156,7 +160,8 @@ Creates a new Battleship game with the specified configuration.
 {
   "success": false,
   "data": null,
-  "error": "Failed to place ships after 100 attempts"
+  "error": "Failed to place ships after 100 attempts",
+  "error_code": "SHIP_PLACEMENT_FAILED"
 }
 ```
 
@@ -246,7 +251,8 @@ Fires a shot at the specified board coordinates.
       }
     ]
   },
-  "error": null
+  "error": null,
+  "error_code": null
 }
 ```
 
@@ -308,7 +314,8 @@ Fires a shot at the specified board coordinates.
       }
     ]
   },
-  "error": null
+  "error": null,
+  "error_code": null
 }
 ```
 
@@ -428,7 +435,8 @@ Retrieves the current state of a game.
       [" ", " ", " ", " ", " ", " ", " ", " "]
     ]
   },
-  "error": null
+  "error": null,
+  "error_code": null
 }
 ```
 
@@ -484,7 +492,8 @@ Retrieves statistics for a game.
       }
     ]
   },
-  "error": null
+  "error": null,
+  "error_code": null
 }
 ```
 
@@ -493,7 +502,8 @@ Retrieves statistics for a game.
 {
   "success": false,
   "data": null,
-  "error": "Game not found"
+  "error": "Game not found",
+  "error_code": "GAME_NOT_FOUND"
 }
 ```
 
