@@ -20,7 +20,9 @@
 
 ## Core Principles
 
-### I. Code Quality
+### I. Clean Architecture
+
+This project follows Uncle Bob's Clean Architecture principles. The architecture is divided into concentric circles with dependencies flowing inward only (The Dependency Rule).
 
 All game engine code MUST adhere to clean code principles and the following quality standards:
 
