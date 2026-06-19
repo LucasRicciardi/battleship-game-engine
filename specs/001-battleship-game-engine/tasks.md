@@ -46,6 +46,7 @@
 - [ ] T008 Configure error handling and logging infrastructure: Create `src/lib/logger/logger.go` with zap configuration and `src/lib/validation/validation.go` for input validation
 - [ ] T009 Setup environment configuration management: Create `src/config/config.go` for loading environment variables (database URL, JWT secret, rate limits, etc.)
 - [ ] T010 [P] Create health check endpoints: Create `src/adapters/gin/handlers/health.go` with `/health/live` and `/health/ready` endpoints
+- [ ] T010a [P] Create entity-to-database mapper functions: Create `src/adapters/db/mappers.go` with mapper functions for Game, Board, Ship, and Player entities (ToGame, ToGameDB, ToBoard, ToBoardDB, ToShip, ToShipDB, ToPlayer, ToPlayerDB)
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -164,9 +165,11 @@
 - [ ] T039 [P] Performance optimization for ship placement algorithm in `src/models/ship.go`
 - [ ] T040 [P] Additional unit tests in `tests/unit/` for edge cases (EC-001 through EC-013) with explicit test cases for each edge case
 - [ ] T041 [P] Error sanitization middleware in `src/adapters/gin/middleware/errorhandler.go` that sanitizes error messages (no stack traces, file paths, or internal state) and adds `error_code` field to all error responses
+- [ ] T041a [P] Error code constants in `src/lib/errors/errors.go` with standardized error codes (INVALID_BOARD_SIZE, INVALID_COORDINATES, GAME_NOT_FOUND, etc.) and HTTP status code mapping
 - [ ] T042 Run quickstart.md validation scenarios 1-5
 - [ ] T043 [P] Configure log rotation in `src/lib/logger/logger.go`
 - [ ] T044 [P] Setup Prometheus metrics collection in `src/lib/metrics/metrics.go`
+- [ ] T045 [P] Performance testing in `tests/integration/performance_test.go` with API response time validation (100ms target for standard board sizes) and load testing (1000 games/minute throughput)
 
 ---
 

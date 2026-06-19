@@ -50,10 +50,10 @@ Build a Battleship Game Engine (BGE) that implements the classic turn-based boar
 
 | Principle | Status | Notes |
 |-----------|--------|-------|
-| Clean Architecture | ✅ PASS | Go structure naturally supports clean architecture with clear layer separation |
+| Clean Architecture | ✅ PASS | Go structure supports clean architecture with database abstraction layer (entities in src/models/, database models in src/adapters/db/) |
 | Code Quality | ✅ PASS | Go enforces clean code through tooling and conventions |
 | Testing Standards | ✅ PASS | Go testing package supports unit, integration, and E2E tests |
-| Test Coverage | ✅ PASS | 95%+ achievable for core game logic |
+| Test Coverage | ✅ PASS | 95%+ achievable for core logic |
 | User Experience Consistency | ✅ PASS | HTTP API provides consistent interface for UI consumers |
 | Performance Requirements | ✅ PASS | Go performance characteristics meet requirements |
 | Security & Data Validation | ✅ PASS | Full security design implemented (validation, auth, rate limiting, access control, error sanitization) |
@@ -455,6 +455,145 @@ dependency "github.com/google/uuid" v1.4.0
 | Performance Metrics | Prometheus counters/histograms | ✅ |
 | Observability | All components implemented | ✅ |
 
+## Database Abstraction Layer
+
+**Decision Date**: 2026-06-19 | **Approach**: Separate core entities from database models with mapper functions
+
+### 1. Core Entities (src/models/)
+
+**Decision**: Core entities in `src/models/` contain NO database fields. They are pure business objects with no external dependencies.
+
+**Implementation**:
+```go
+// models/game.go
+type Game struct {
+    ID             string
+    BoardRows      int
+    BoardColumns   int
+    NumPlayers     int
+    Turn           int
+    CurrentPlayer  int
+    Status         string
+    Winner         int
+    Ships          []Ship
+    Board          [][]string
+}
+```
+
+**Why**: Entities remain database-independent and testable without PostgreSQL. Follows Clean Architecture principle I.4 (Entities must be independent of database concerns).
+
+### 2. Database Models (src/adapters/db/models.go)
+
+**Decision**: Database models in `src/adapters/db/models.go` use GORM for PostgreSQL persistence.
+
+**Implementation**:
+```go
+// adapters/db/models.go
+type GameDB struct {
+    ID             string    `gorm:"primaryKey;type:uuid"`
+    BoardRows      int       `gorm:"not null;default:8"`
+    BoardColumns   int       `gorm:"not null;default:8"`
+    NumPlayers     int       `gorm:"not null;default:1"`
+    CreatedAt      time.Time `gorm:"not null"`
+    Turn           int       `gorm:"not null;default:1"`
+    CurrentPlayer  int       `gorm:"not null;default:1"`
+    Status         string    `gorm:"not null;default:'active'"`
+    Winner         int       `gorm:"default:0"`
+}
+```
+
+**Why**: GORM models handle database persistence with PostgreSQL. Database models are isolated in adapters layer.
+
+### 3. Mapper Functions
+
+**Decision**: Mapper functions convert between core entities and database models.
+
+**Implementation**:
+```go
+// adapters/db/mappers.go
+package db
+
+import (
+    "battleship-game-engine/models"
+)
+
+// ToGame converts GameDB to Game entity
+cfunc ToGame(db GameDB) models.Game {
+    return models.Game{
+        ID:             db.ID,
+        BoardRows:      db.BoardRows,
+        BoardColumns:   db.BoardColumns,
+        NumPlayers:     db.NumPlayers,
+        Turn:           db.Turn,
+        CurrentPlayer:  db.CurrentPlayer,
+        Status:         db.Status,
+        Winner:         db.Winner,
+        // Ships and Board populated separately
+    }
+}
+
+// ToGameDB converts Game entity to GameDB
+cfunc ToGameDB(game models.Game) GameDB {
+    return GameDB{
+        ID:             game.ID,
+        BoardRows:      game.BoardRows,
+        BoardColumns:   game.BoardColumns,
+        NumPlayers:     game.NumPlayers,
+        Turn:           game.Turn,
+        CurrentPlayer:  game.CurrentPlayer,
+        Status:         game.Status,
+        Winner:         game.Winner,
+    }
+}
+```
+
+**Why**: Mappers isolate database concerns. Entities remain pure business objects. Follows Clean Architecture principle I.4.
+
+### 4. Repository Pattern
+
+**Decision**: Repository interface in `src/models/`, implementation in `src/adapters/db/`.
+
+**Implementation**:
+```go
+// models/game_repository.go
+type GameRepository interface {
+    Save(game *models.Game) error
+    FindByID(id string) (*models.Game, error)
+    FindAll() ([]models.Game, error)
+    Delete(id string) error
+}
+```
+
+```go
+// adapters/db/game_repository.go
+type GameRepositoryImpl struct {
+    db *gorm.DB
+}
+
+func (r *GameRepositoryImpl) Save(game *models.Game) error {
+    // Convert entity to DB model, save, return error
+}
+```
+
+**Why**: Repository pattern abstracts data access. Entities don't know about database implementation.
+
+### Constitution Compliance Summary
+
+| Requirement | Implementation | Status |
+|-------------|----------------|--------|
+| I.4 Entities Independent | Core entities in src/models/ have no database fields | ✅ |
+| I.5 Dependency Rule | Database models in adapters depend on entities | ✅ |
+| FR-049 Error Sanitization | Custom error handler middleware | ✅ |
+| Database Persistence | PostgreSQL via GORM with mapper layer | ✅ |
+
+### Dependencies to Add
+
+```go
+// go.mod additions
+dependency "github.com/go-gorm/gorm" v1.25.5
+dependency "github.com/go-gorm/postgres" v1.0.2
+```
+
 ## Project Structure
 
 ### Documentation (this feature)
@@ -507,12 +646,20 @@ Dockerfile               # Application container (root level)
 
 > **Fill ONLY if Constitution Check has violations that must be justified**
 
-No violations - all constitutional principles are achievable with the proposed architecture.
+No violations - all constitutional principles are achievable with the proposed architecture including database abstraction layer.
 
 **Clean Architecture Compliance**:
-- **Entities Layer** (`src/models/`): Core business rules (Game, Board, Ship, Player) are framework-independent and contain no external dependencies
+- **Entities Layer** (`src/models/`): Core business rules (Game, Board, Ship, Player) are framework-independent and database-independent (no database fields)
+- **Database Models Layer** (`src/adapters/db/models.go`): GORM models for PostgreSQL persistence with mapper functions
+- **Mapper Layer** (`src/adapters/db/mappers.go`): Converts between core entities and database models
 - **Use Cases Layer** (`src/services/`): Application business rules orchestrate Entities without UI/database concerns
 - **Interface Adapters Layer** (`src/adapters/`): Framework-specific code (Gin, GORM) converts data between formats for inner layers
 - **Drivers Layer**: External agencies (database, web framework) are isolated in the outermost layer
 
 **Dependency Rule**: All source code dependencies flow inward only - outer layers depend on inner layers, never vice versa.
+
+**Database Abstraction**:
+- Core entities in `src/models/` have NO database fields (pure business objects)
+- Database models in `src/adapters/db/models.go` use GORM for PostgreSQL
+- Mapper functions in `src/adapters/db/mappers.go` convert between entities and database models
+- Repository pattern in `src/models/game_repository.go` (interface) and `src/adapters/db/game_repository.go` (implementation)

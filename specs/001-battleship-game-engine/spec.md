@@ -290,7 +290,32 @@ After completing a game, users want the option to start a new game without resta
 
 #### Error Handling
 
-- **FR-049**: System MUST return all operations using success/failure result pattern: `{ success: boolean, data?: ..., error?: ... }` where `error` contains descriptive error information when `success` is `false`. Error responses MUST include an `error_code` field with standardized error codes (e.g., `INVALID_BOARD_SIZE`, `INVALID_COORDINATES`, `GAME_NOT_FOUND`). Error messages MUST include operation name, invalid parameter name, and suggested recovery action. Error messages MUST NOT include stack traces, file paths, or internal state information.
+- **FR-049**: System MUST return all operations using success/failure result pattern: `{ success: boolean, data?: ..., error?: ..., error_code?: string }` where `error` contains descriptive error information when `success` is `false`. Error responses MUST include an `error_code` field with standardized error codes (see Error Codes table below). Error messages MUST include operation name, invalid parameter name, and suggested recovery action. Error messages MUST NOT include stack traces, file paths, or internal state information.
+
+**Error Codes**:
+| Error Code | Description | HTTP Status | Suggested Recovery |
+|------------|-------------|-------------|-------------------|
+| `INVALID_BOARD_SIZE` | Board dimensions outside valid range (5x5 to 100x100) | 400 | Specify board_rows and board_columns between 5 and 100 |
+| `INVALID_COORDINATES` | Shot coordinates outside board boundaries | 400 | Specify row and column within board dimensions |
+| `INVALID_PLAYER_ID` | Player ID outside valid range (1 to num_players) | 400 | Specify player_id within valid range |
+| `GAME_NOT_FOUND` | Game ID does not exist | 404 | Verify game_id is correct |
+| `GAME_COMPLETED` | Operation not allowed on completed game | 409 | Start a new game |
+| `DUPLICATE_SHOT` | Shot at already-targeted cell | 409 | Choose different coordinates |
+| `OUT_OF_TURN` | Shot by wrong player in multiplayer | 403 | Wait for your turn |
+| `SHIP_PLACEMENT_FAILED` | Could not place ships within retry limit | 409 | Try with different board size |
+| `INTERNAL_ERROR` | Unexpected server error | 500 | Contact support |
+
+**Error Message Format**: `{operation_name} failed: {invalid_parameter_name} is invalid. {suggested_recovery_action}`
+
+**Example Error Response**:
+```json
+{
+  "success": false,
+  "data": null,
+  "error": "shoot failed: row is invalid. Specify row between 0 and 7 for 8x8 board",
+  "error_code": "INVALID_COORDINATES"
+}
+```
 
 - **FR-050**: System MUST maintain valid game state after failed operations (no partial updates)
 
@@ -301,19 +326,37 @@ After completing a game, users want the option to start a new game without resta
 
 ### Key Entities
 
-- **Game**: Represents an active Battleship game session containing board state, ship positions, hit/miss tracking, turn information, and player data
+#### Core Entities (Database-Independent)
 
-- **Board**: An N×M grid representing the game area where ships are placed and shots are fired; each cell tracks target status (space for untargeted, "O" for miss, "X" for hit)
+These entities are defined in `src/models/` and contain no database dependencies, following Clean Architecture principle I.4.
 
-- **Ship**: A vessel with properties `{ id: string, type: string, length: number, positions: {row,col}[], hits: number, sunk: boolean }` placed horizontally or vertically on the board; uniquely identified by ID for tracking across game operations
+- **Game**: Represents an active Battleship game session containing board state, ship positions, hit/miss tracking, turn information, and player data. In-memory representation with no database fields.
+
+- **Board**: An N×M grid representing the game area where ships are placed and shots are fired; each cell tracks target status (space for untargeted, "O" for miss, "X" for hit). Pure data structure with no database persistence.
+
+- **Ship**: A vessel with properties `{ id: string, type: string, length: number, positions: {row,col}[], hits: number, sunk: boolean }` placed horizontally or vertically on the board; uniquely identified by ID for tracking across game operations. Database-independent representation.
 
 - **HitMissCell**: A cell in the hit/miss tracking grid containing space (untargeted), "O" (miss - no ship), or "X" (hit - ship occupied)
 
-- **Player**: A game participant with independent board state and ship positions; tracks turn order and victory status
+- **Player**: A game participant with independent board state and ship positions; tracks turn order and victory status. Pure data structure.
 
 - **GameStats**: A data structure containing metrics about current game state including turns played, hits, misses, and ships remaining
 
 - **TurnState**: Tracks which player's turn it is; engine enforces turn order and rejects shots from the wrong player
+
+#### Database Models (Interface Adapters Layer)
+
+These models are defined in `src/adapters/db/models.go` and handle PostgreSQL persistence via GORM. Mapper functions convert between database models and core entities.
+
+- **GameDB**: GORM model for games table with database fields (ID, timestamps, etc.)
+
+- **BoardDB**: GORM model for boards table with serialized cell data
+
+- **ShipDB**: GORM model for ships table with serialized position data
+
+- **PlayerDB**: GORM model for players table with statistics
+
+**Note**: Core entities in `src/models/` must remain database-independent. Database models in `src/adapters/db/` handle persistence and mapping.
 
 ### API Response Structures
 
@@ -401,7 +444,7 @@ After completing a game, users want the option to start a new game without resta
 
 - Text-based presentation layer handles all user interaction (input/output)
 
-- No persistence of game state between sessions (each startGame() is independent)
+- **Database Persistence**: The engine supports optional database persistence for game state. When persistence is enabled, entities are stored in PostgreSQL via GORM. Entities in `src/models/` remain database-independent (no database fields); database models in `src/adapters/db/models.go` handle persistence. This separation follows Clean Architecture principle I.4.
 
 - No time limits on turns or overall game duration
 
@@ -413,7 +456,7 @@ After completing a game, users want the option to start a new game without resta
 
 - No undo functionality for shots
 
-- Ship placement algorithm uses rejection sampling with a maximum retry limit of 100 attempts
+- Ship placement algorithm uses rejection sampling with a maximum retry limit of 100 attempts. The algorithm attempts random placement up to 100 times before failing. The random seed is system-generated (time-based) for variety across games.
 
 - Board minimum size is 5×5; boards smaller than this will fail to place all ships
 

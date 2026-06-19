@@ -6,11 +6,27 @@
 
 ---
 
-## Core Entities
+## Architecture Overview
+
+This data model defines both **core entities** (database-independent business objects) and **database models** (GORM persistence layer). This separation follows Clean Architecture principle I.4 - Entities remain independent of database concerns.
+
+### Core Entities (src/models/)
+
+Core entities are defined in `src/models/` and contain NO database fields. They represent pure business logic and are database-independent.
+
+### Database Models (src/adapters/db/models.go)
+
+Database models are defined in `src/adapters/db/models.go` and use GORM for PostgreSQL persistence. Mapper functions convert between core entities and database models.
+
+---
+
+## Core Entities (Database-Independent)
 
 ### Game
 
 Represents an active Battleship game session containing board state, ship positions, hit/miss tracking, turn information, and player data.
+
+**Note**: Game entities are stored in the `games` table. The Game entity in `src/models/` is database-independent; the GameDB model in `src/adapters/db/models.go` handles persistence.
 
 | Field | Type | Description | Validation |
 |-------|------|-------------|------------|
@@ -35,8 +51,11 @@ created → active → completed (with winner or draw)
 
 An N×M grid representing the game area where ships are placed and shots are fired.
 
+**Note**: Board entities are stored in the `boards` table with `GameID` foreign key. The Board entity in `src/models/` is database-independent; the BoardDB model in `src/adapters/db/models.go` handles persistence.
+
 | Field | Type | Description | Validation |
 |-------|------|-------------|------------|
+| ID | string (UUID) | Unique board identifier | Required |
 | GameID | string (UUID) | Associated game ID | Required |
 | Rows | int | Number of rows | Same as Game.BoardRows |
 | Columns | int | Number of columns | Same as Game.BoardColumns |
@@ -57,6 +76,8 @@ An N×M grid representing the game area where ships are placed and shots are fir
 ### Ship
 
 A vessel with properties `{ id: string, type: string, length: number, positions: {row,col}[], hits: number, sunk: boolean }` placed horizontally or vertically on the board.
+
+**Note**: Ship entities are stored in the `ships` table with `GameID` foreign key. Each game has multiple ships (one per player). The Ship entity in `src/models/` is database-independent; the ShipDB model in `src/adapters/db/models.go` handles persistence.
 
 | Field | Type | Description | Validation |
 |-------|------|-------------|------------|
@@ -91,12 +112,14 @@ placed (hits=0, sunk=false) → damaged (hits>0, sunk=false) → sunk (hits=Leng
 
 A game participant with independent board state and ship positions.
 
+**Note**: The `Ships` field in this data model represents the player's ships as referenced Ship entities (via Ship.ID). In the database, ships are stored separately in the `ships` table with a `GameID` foreign key. The `Ships` field in this table is for documentation purposes only - actual ship data is stored in the `ships` table.
+
 | Field | Type | Description | Validation |
 |-------|------|-------------|------------|
 | ID | int | Player number (1-indexed) | Min: 1, Max: NumPlayers |
 | GameID | string (UUID) | Associated game ID | Required |
 | BoardID | string (UUID) | Associated board ID | Required |
-| Ships | []Ship | Player's ships | Array of Ship entities |
+| Ships | []string | Array of Ship IDs (references) | Array of Ship IDs |
 | ShotsFired | int | Total shots fired by this player | Min: 0 |
 | ShotsHit | int | Shots that hit a ship | Min: 0, Max: ShotsFired |
 | ShipsSunk | int | Number of opponent ships sunk | Min: 0, Max: NumOpponentShips |
@@ -112,6 +135,8 @@ A game participant with independent board state and ship positions.
 ### GameStats
 
 A data structure containing metrics about current game state.
+
+**Note**: GameStats is a derived data structure, not stored in the database. It is computed from the `games`, `boards`, `ships`, and `players` tables.
 
 | Field | Type | Description | Validation |
 |-------|------|-------------|------------|
@@ -132,9 +157,13 @@ A data structure containing metrics about current game state.
 
 ---
 
-## Database Schema (GORM Models)
+## Database Models (GORM Persistence Layer)
+
+These models are defined in `src/adapters/db/models.go` and handle PostgreSQL persistence via GORM. Mapper functions convert between database models and core entities.
 
 ### games table
+
+**Note**: Game entities are stored in this table. The Game entity in `src/models/` is database-independent; GameDB in `src/adapters/db/models.go` handles persistence.
 
 ```go
 type Game struct {
@@ -152,6 +181,8 @@ type Game struct {
 
 ### boards table
 
+**Note**: Board entities are stored in this table with `GameID` foreign key. The Board entity in `src/models/` is database-independent; BoardDB in `src/adapters/db/models.go` handles persistence.
+
 ```go
 type Board struct {
     ID        string `gorm:"primaryKey;type:uuid"`
@@ -163,6 +194,8 @@ type Board struct {
 ```
 
 ### ships table
+
+**Note**: Ship entities are stored in this table with `GameID` foreign key. The Ship entity in `src/models/` is database-independent; ShipDB in `src/adapters/db/models.go` handles persistence.
 
 ```go
 type Ship struct {
@@ -177,6 +210,8 @@ type Ship struct {
 ```
 
 ### players table
+
+**Note**: Player entities are stored in this table with `GameID` foreign key. The Player entity in `src/models/` is database-independent; PlayerDB in `src/adapters/db/models.go` handles persistence.
 
 ```go
 type Player struct {
