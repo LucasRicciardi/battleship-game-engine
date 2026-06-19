@@ -1,22 +1,21 @@
 <!--
   Sync Impact Report:
-  - Version change: 2.2.0 → 2.3.0
+  - Version change: 2.3.0 → 2.4.0 (MINOR - new principles added)
   - Modified principles:
-    - I. Clean Architecture (new - supersedes Code Quality as primary principle)
-    - II. Code Quality (renumbered - retained clean code principles)
+    - II. Code Quality (made rules more pragmatic - abbreviations allowed for domain-relevant terms, functions measured by understandability vs line count)
+    - V. User Experience Consistency (expanded with API Documentation section)
+    - IV. Test Coverage (made risk-based - 95% for core logic, 80% for adapters, 100% for critical paths)
+    - VI. Performance Requirements (made flexible with performance baselines, removed fixed load time and memory limits)
   - Added sections:
-    - Architecture Layers (Entities, Use Cases, Interface Adapters, Frameworks & Drivers)
-    - The Dependency Rule
-    - Crossing Boundaries
-    - Data Across Boundaries
+    - Security & Data Validation (v2.4.0)
+    - Observability (v2.4.0)
   - Removed sections: N/A
   - Templates requiring updates:
     - ⚠ pending: .specify/templates/plan-template.md (Constitution Check section)
     - ⚠ pending: .specify/templates/spec-template.md (requirement alignment)
     - ⚠ pending: .specify/templates/tasks-template.md (task categorization)
-  - Follow-up TODOs:
-    - TODO(PROJECT_NAME): Set to "Battleship Game Engine" when project naming is finalized
-    - TODO(RATIFICATION_DATE): Set to 2026-06-18 (project initialization date)
+  - Follow-up TODOs: None - all project metadata confirmed
+  - Last amended: 2026-06-19 (v2.4.0 - added Security & Data Validation, Observability principles; made Code Quality, Test Coverage, and Performance requirements more pragmatic)
 -->
 
 # Battleship Game Engine Constitution
@@ -97,11 +96,11 @@ All game engine code MUST adhere to clean code principles and the following qual
 
 #### Clean Code Principles (MUST follow all):
 
-- **Meaningful Naming**: All identifiers (variables, functions, classes, modules) MUST use clear, intention-revealing names that follow language conventions; abbreviations are prohibited unless universally understood (e.g., "ID", "URL")
-- **Small Functions**: Functions MUST be kept small (typically <20 lines); functions exceeding 50 lines MUST be refactored into smaller, well-named functions
+- **Meaningful Naming**: All identifiers MUST use clear, intention-revealing names that follow language conventions; abbreviations are allowed when they are widely recognized in the domain (e.g., "ID", "URL", "cfg", "cmd", "pkg", "req", "resp")
+- **Small Functions**: Functions SHOULD be kept small enough to understand at a glance; functions exceeding 50 lines SHOULD be reviewed for refactoring opportunities unless complexity is justified (e.g., complex algorithms, performance-critical paths)
 - **Single Responsibility**: Each module, class, and function MUST have exactly one reason to change; modules that serve multiple purposes MUST be split
 - **DRY Principle**: Duplicate code is prohibited; all repeated logic MUST be extracted into reusable functions/components with clear boundaries
-- **Boy Scout Rule**: Developers MUST leave the codebase cleaner than they found it; no new technical debt allowed without explicit justification
+- **Boy Scout Rule**: Developers MUST leave the codebase cleaner than they found it; no new technical debt allowed without explicit justification in PR description
 - **Testability**: All code MUST be designed for testing; dependencies MUST be injectable, and modules MUST be unit-testable without external services
 - **Clear Intent**: Code MUST communicate its purpose through structure and naming; complex logic MUST include inline comments explaining "why" not "what"
 
@@ -131,13 +130,15 @@ Testing is MANDATORY for all game engine functionality. Three layers of testing 
 
 Test coverage is MANDATORY and MUST meet the following standards:
 
-- **Coverage Targets**: All modules MUST achieve ≥90% code coverage
+- **Coverage Targets**: Core game logic (Entities, Use Cases) MUST achieve ≥95% code coverage; Adapter layers MAY achieve ≥80% coverage where external dependencies limit testability
 - **Coverage Types**: Coverage MUST include unit tests, integration tests, and E2E tests
+- **Critical Path Coverage**: All game-critical paths (ship placement, turn ordering, win detection) MUST have 100% branch coverage
+- **Edge Case Coverage**: All identified edge cases MUST have dedicated test cases regardless of line coverage
 - **Coverage Verification**: Coverage reports MUST be generated and reviewed on all pull requests
 - **Coverage Maintenance**: New code MUST maintain or improve overall coverage; significant drops require explicit justification
 - **Coverage Reporting**: Coverage metrics MUST be publicly visible in the repository
 
-**Rationale**: High test coverage is not just about numbers - it ensures that the engine's logic is well-tested and that critical paths are protected from regressions. Coverage targets provide measurable quality gates while maintaining flexibility for genuine edge cases.
+**Rationale**: This engine is foundational infrastructure - bugs in core logic can cascade through all UI consumers. Risk-based coverage targets ensure critical paths are fully tested while being pragmatic for adapter layers that deal with external dependencies.
 
 ### V. User Experience Consistency
 
@@ -149,19 +150,82 @@ While this engine does not implement UI directly, all public APIs MUST provide a
 - **Consistent Data Shapes**: All API responses MUST follow consistent data models and naming conventions
 - **Cross-Platform**: Engine MUST work consistently for all UI consumers (web, mobile, desktop) without platform-specific quirks
 
-**Rationale**: This engine is foundational infrastructure for UI applications. Consistent, predictable APIs enable UI developers to build reliable experiences without workarounds.
+#### API Documentation
+
+- All public APIs MUST have documentation describing parameters, return values, and errors
+- Documentation MUST include example requests and responses for common use cases
+- Documentation MUST specify data formats, units, and any assumptions about input data
+- Public APIs MUST include error codes and suggested recovery actions
+
+**Rationale**: This engine is foundational infrastructure - unclear API contracts cause integration issues across all UI consumers. Comprehensive documentation enables UI developers to integrate correctly without trial-and-error.
 
 ### VI. Performance Requirements
 
 Performance is critical for responsive API responses:
 
-- **API Response Time**: All endpoints MUST respond within 200ms for typical operations (board queries, state updates)
-- **Memory Limits**: Game state MUST fit within 50MB RAM for typical matches (2 players, standard board)
-- **Load Time**: Initial engine module load MUST complete within 1 second
-- **Scalability**: Engine MUST support up to 4 players per match without performance degradation
+- **API Response Time**: Typical operations (board queries, state updates) MUST respond within 200ms; complex operations (AI turn calculation, full board analysis) MAY exceed this with justification
+- **Scalability**: Engine MUST support up to 4 players per match without performance degradation; larger player counts require performance testing documentation
+- **Performance Baselines**: All performance-critical operations MUST have baseline measurements documented and reviewed on major changes
 - **Profiling**: Performance-critical paths MUST include timing instrumentation for ongoing monitoring
 
-**Rationale**: This engine powers UI applications - slow API responses directly impact end-user experience. Responsive APIs enable snappy, interactive game interfaces.
+**Rationale**: This engine powers UI applications - slow API responses directly impact end-user experience. Performance baselines ensure we maintain awareness of performance characteristics while allowing flexibility for complex operations that legitimately require more time or resources.
+
+### VII. Security & Data Validation
+
+All game engine operations MUST implement security best practices to protect against malicious inputs and unauthorized state manipulation.
+
+#### Input Validation
+
+- All external inputs (API requests, user data, network messages) MUST be validated before processing
+- Validation MUST include type checking, range checking, and format validation
+- Invalid inputs MUST return descriptive error messages without exposing system internals
+- Never trust data from UI consumers - all data must be validated at the engine boundary
+
+#### Access Control
+
+- Game state modifications MUST verify the requesting entity has authority to make changes
+- Player actions MUST be validated against current game state (e.g., can only fire during turn)
+- Sensitive operations (game reset, admin commands) MUST require explicit authorization
+
+#### Data Sanitization
+
+- All data persisted MUST be sanitized to prevent injection attacks
+- Game state serialization MUST exclude sensitive system information
+- Error messages MUST not leak implementation details (stack traces, file paths)
+
+#### Secure Default State
+
+- Game engines MUST default to safe states on initialization
+- Failed operations MUST leave system in valid state (no partial updates)
+- Concurrent operations MUST use optimistic locking or similar conflict resolution
+
+**Rationale**: This engine powers multiplayer experiences where malicious inputs could crash services, leak data, or manipulate game state. Security is non-negotiable - a compromised game engine breaks all UI consumers.
+
+### VIII. Observability
+
+All game engine operations MUST be observable through logging, tracing, and monitoring.
+
+#### Logging Standards
+
+- All layers MUST log at appropriate levels (Entities: ERROR only, Use Cases: INFO/WARN, Adapters: DEBUG/INFO)
+- All log entries MUST include correlation IDs for request tracing
+- All errors MUST include context (operation, parameters, state) for debugging
+- Sensitive data (player IDs, game states) MUST be masked or excluded from logs
+
+#### Tracing
+
+- All public API calls MUST include tracing headers (trace ID, span ID)
+- Cross-layer operations MUST maintain trace context through all layers
+- Slow operations (>100ms) MUST be automatically traced and logged
+
+#### Monitoring
+
+- All public APIs MUST expose health check endpoints
+- All errors MUST be counted and reported to monitoring system
+- Performance metrics (latency, throughput) MUST be collected for all endpoints
+- Alerting MUST be configured for error rate spikes and performance degradation
+
+**Rationale**: This engine powers multiplayer experiences - without observability, issues in production cannot be diagnosed or resolved quickly. Comprehensive logging, tracing, and monitoring enable rapid incident response and root cause analysis.
 
 ## Governance
 
@@ -177,4 +241,4 @@ This constitution supersedes all other development practices for the Battleship 
 - MINOR: New principles, material expansion of existing principles
 - PATCH: Clarifications, wording improvements, typo fixes
 
-**Version**: 2.3.0 | **Ratified**: 2026-06-18 | **Last Amended**: 2026-06-19
+**Version**: 2.4.0 | **Ratified**: 2026-06-18 | **Last Amended**: 2026-06-19
