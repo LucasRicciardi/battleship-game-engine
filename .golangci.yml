@@ -1,0 +1,53 @@
+# See https://golangci-lint.run/usage/configuration/
+run:
+  deadline: 5m
+  issues-exit-code: 1
+  tests: true
+  skip-dirs:
+    - vendor
+    - .git
+    - dist
+    - build
+
+linters-settings:
+  govet:
+    check-shadowing: true
+  golint:
+    min-confidence: 0.8
+  gocyclo:
+    min-complexity: 15
+  goimports:
+    local-prefixes: battleship-game-engine
+  dupl:
+    threshold: 100
+  gosec:
+    excludes:
+      - G204
+      - G304
+      - G402
+
+linters:
+  disable-all: false
+  enable:
+    - govet
+    - errcheck
+    - staticcheck
+    - unused
+    - gosec
+    - gocyclo
+    - golint
+    - goimports
+    - dupl
+    - typecheck
+    - deadcode
+    - structcheck
+    - varcheck
+    - ineffassign
+    - bodyclose
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - gosec
+        - dupl

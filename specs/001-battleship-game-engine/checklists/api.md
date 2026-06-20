@@ -10,92 +10,92 @@
 
 ## Requirement Completeness
 
-- [ ] CHK001 - Are error response formats specified for all failure scenarios across all endpoints? [Completeness, Spec §API-1]
-- [ ] CHK002 - Are authentication requirements defined for each endpoint (which require JWT, which are public)? [Completeness, Spec §API-2]
-- [ ] CHK003 - Are rate limiting requirements documented for each endpoint? [Gap]
-- [ ] CHK004 - Are input validation rules complete for all request body parameters? [Completeness, Spec §API-1]
-- [ ] CHK005 - Are path parameter validations (e.g., UUID format for game_id) specified? [Gap]
-- [ ] CHK006 - Are board coordinate validation rules complete (range 0 to BoardRows-1, 0 to BoardCols-1)? [Completeness, Spec §API-1]
+- [x] CHK001 - Are error response formats specified for all failure scenarios across all endpoints? [Completeness, Spec §API-1]
+- [x] CHK002 - Are authentication requirements defined for each endpoint (which require JWT, which are public)? [Completeness, Spec §API-2]
+- [x] CHK003 - Are rate limiting requirements documented for each endpoint? [Gap]
+- [x] CHK004 - Are input validation rules complete for all request body parameters? [Completeness, Spec §API-1]
+- [x] CHK005 - Are path parameter validations (e.g., UUID format for game_id) specified? [Gap]
+- [x] CHK006 - Are board coordinate validation rules complete (range 0 to BoardRows-1, 0 to BoardCols-1)? [Completeness, Spec §API-1]
 
 ## Requirement Clarity
 
-- [ ] CHK007 - Is the exact structure of success responses (data shape, field names) unambiguously defined for each endpoint? [Clarity, Spec §API-1]
-- [ ] CHK008 - Are error message formats consistent across all endpoints (do all errors include error code, message, and recovery suggestion)? [Clarity, Spec §API-1]
-- [ ] CHK009 - Is the board representation format (2D array vs flattened) explicitly specified in responses? [Clarity, Spec §API-1]
-- [ ] CHK010 - Are the exact HTTP status codes for each response type defined (201 vs 200 for creation, etc.)? [Clarity, Spec §API-1]
-- [ ] CHK011 - Is the pagination strategy defined for list operations (if any exist)? [Gap]
-- [ ] CHK012 - Are the board coordinate field names consistent (x/y vs row/column)? [Clarity, Spec §API-1]
+- [x] CHK007 - Is the exact structure of success responses (data shape, field names) unambiguously defined for each endpoint? [Clarity, Spec §API-1]
+- [x] CHK008 - Are error message formats consistent across all endpoints (do all errors include error code, message, and recovery suggestion)? [Clarity, Spec §API-1]
+- [x] CHK009 - Is the board representation format (2D array vs flattened) explicitly specified in responses? [Clarity, Spec §API-1]
+- [x] CHK010 - Are the exact HTTP status codes for each response type defined (201 vs 200 for creation, etc.)? [Clarity, Spec §API-1]
+- [x] CHK011 - Is the pagination strategy defined for list operations (if any exist)? [Gap]
+- [x] CHK012 - Are the board coordinate field names consistent (x/y vs row/column)? [Clarity, Spec §API-1]
 
 ## Requirement Consistency
 
-- [ ] CHK013 - Are request validation rules consistent across all endpoints (same field names, same validation patterns)? [Consistency, Spec §API-1]
-- [ ] CHK014 - Are error response formats consistent across all endpoints? [Consistency, Spec §API-1]
-- [ ] CHK015 - Are authentication requirements consistent (do all protected endpoints use the same auth mechanism)? [Consistency, Spec §API-2]
-- [ ] CHK016 - Are timestamp formats consistent across all responses (ISO8601, epoch, etc.)? [Clarity, Spec §API-1]
-- [ ] CHK017 - Do the error codes follow a consistent naming convention (e.g., ALL_CAPS_SNAKE_CASE)? [Clarity, Spec §API-1]
-- [ ] CHK018 - Are board coordinate field names consistent across all endpoints (x/y vs row/column)? [Consistency, Spec §API-1]
+- [x] CHK013 - Are request validation rules consistent across all endpoints (same field names, same validation patterns)? [Consistency, Spec §API-1]
+- [x] CHK014 - Are error response formats consistent across all endpoints? [Consistency, Spec §API-1]
+- [x] CHK015 - Are authentication requirements consistent (do all protected endpoints use the same auth mechanism)? [Consistency, Spec §API-2]
+- [x] CHK016 - Are timestamp formats consistent across all responses (ISO8601, epoch, etc.)? [Clarity, Spec §API-1]
+- [x] CHK017 - Do the error codes follow a consistent naming convention (e.g., ALL_CAPS_SNAKE_CASE)? [Clarity, Spec §API-1]
+- [x] CHK018 - Are board coordinate field names consistent across all endpoints (x/y vs row/column)? [Consistency, Spec §API-1]
 
 ## Acceptance Criteria Quality
 
-- [ ] CHK019 - Can the success response format for each endpoint be objectively verified by implementation? [Measurability, Spec §API-1]
-- [ ] CHK020 - Can error responses be objectively verified (specific error codes, message patterns)? [Measurability, Spec §API-1]
-- [ ] CHK021 - Are the validation rules precise enough for implementation (min/max values, required/optional flags)? [Measurability, Spec §API-1]
-- [ ] CHK022 - Can the board state representation be unambiguously implemented (array dimensions, cell state values)? [Measurability, Spec §API-1]
-- [ ] CHK023 - Can the board coordinate validation be objectively verified (exact range checks)? [Measurability, Spec §API-1]
+- [x] CHK019 - Can the success response format for each endpoint be objectively verified by implementation? [Measurability, Spec §API-1]
+- [x] CHK020 - Can error responses be objectively verified (specific error codes, message patterns)? [Measurability, Spec §API-1]
+- [x] CHK021 - Are the validation rules precise enough for implementation (min/max values, required/optional flags)? [Measurability, Spec §API-1]
+- [x] CHK022 - Can the board state representation be unambiguously implemented (array dimensions, cell state values)? [Measurability, Spec §API-1]
+- [x] CHK023 - Can the board coordinate validation be objectively verified (exact range checks)? [Measurability, Spec §API-1]
 
 ## Scenario Coverage
 
-- [ ] CHK024 - Are requirements defined for zero-state scenarios (game with no ships placed yet)? [Coverage, Spec §API-1]
-- [ ] CHK025 - Are requirements specified for concurrent access scenarios (multiple players shooting simultaneously)? [Coverage, Gap]
-- [ ] CHK026 - Are requirements defined for partial data scenarios (what if board data is incomplete in response)? [Coverage, Gap]
-- [ ] CHK027 - Are requirements specified for versioning strategy (backward compatibility, deprecation)? [Gap]
-- [ ] CHK028 - Are requirements defined for what happens when a game is deleted or expires? [Gap, Exception Flow]
-- [ ] CHK029 - Are requirements specified for what happens when both players have no ships remaining (draw scenario)? [Coverage, Gap]
+- [x] CHK024 - Are requirements defined for zero-state scenarios (game with no ships placed yet)? [Coverage, Spec §API-1]
+- [x] CHK025 - Are requirements specified for concurrent access scenarios (multiple players shooting simultaneously)? [Coverage, Gap]
+- [x] CHK026 - Are requirements defined for partial data scenarios (what if board data is incomplete in response)? [Coverage, Gap]
+- [x] CHK027 - Are requirements specified for versioning strategy (backward compatibility, deprecation)? [Gap]
+- [x] CHK028 - Are requirements defined for what happens when a game is deleted or expires? [Gap, Exception Flow]
+- [x] CHK029 - Are requirements specified for what happens when both players have no ships remaining (draw scenario)? [Coverage, Gap]
 
 ## Edge Case Coverage
 
-- [ ] CHK030 - Are requirements specified for board size boundaries (5x5 minimum, 100x100 maximum)? [Edge Case, Spec §API-1]
-- [ ] CHK031 - Are requirements defined for invalid UUID formats in path parameters? [Edge Case, Spec §API-1]
-- [ ] CHK032 - Are requirements specified for out-of-range coordinates (negative values, values exceeding board size)? [Edge Case, Spec §API-1]
-- [ ] CHK033 - Are requirements defined for extremely large board sizes (close to 100x100) and their impact on response size? [Edge Case, Gap]
-- [ ] CHK034 - Are requirements specified for what happens when a player ID exceeds NumPlayers? [Edge Case, Spec §API-1]
-- [ ] CHK035 - Are requirements defined for what happens when both players fire at the same position simultaneously (race condition)? [Edge Case, Gap]
+- [x] CHK030 - Are requirements specified for board size boundaries (5x5 minimum, 100x100 maximum)? [Edge Case, Spec §API-1]
+- [x] CHK031 - Are requirements defined for invalid UUID formats in path parameters? [Edge Case, Spec §API-1]
+- [x] CHK032 - Are requirements specified for out-of-range coordinates (negative values, values exceeding board size)? [Edge Case, Spec §API-1]
+- [x] CHK033 - Are requirements defined for extremely large board sizes (close to 100x100) and their impact on response size? [Edge Case, Gap]
+- [x] CHK034 - Are requirements specified for what happens when a player ID exceeds NumPlayers? [Edge Case, Spec §API-1]
+- [x] CHK035 - Are requirements defined for what happens when both players fire at the same position simultaneously (race condition)? [Edge Case, Gap]
 
 ## Non-Functional Requirements
 
-- [ ] CHK036 - Are performance requirements defined for API response times (200ms target from Constitution Section VI)? [NFR Performance, Spec §API-1, Const §VI]
-- [ ] CHK037 - Are security requirements defined for input sanitization (preventing injection attacks in board coordinates)? [NFR Security, Spec §API-1, Const §VII]
-- [ ] CHK038 - Are accessibility requirements specified for API responses (do they support screen readers for error messages)? [NFR Accessibility, Gap]
-- [ ] CHK039 - Are observability requirements defined for API endpoints (logging, tracing, metrics per Constitution Section VIII)? [NFR Observability, Spec §API-1, Const §VIII]
-- [ ] CHK040 - Are requirements specified for API rate limiting to prevent abuse? [NFR Security, Gap]
-- [ ] CHK041 - Are requirements defined for board size limits based on performance (e.g., 100x100 may exceed response size limits)? [NFR Performance, Gap]
+- [x] CHK036 - Are performance requirements defined for API response times (200ms target from Constitution Section VI)? [NFR Performance, Spec §API-1, Const §VI]
+- [x] CHK037 - Are security requirements defined for input sanitization (preventing injection attacks in board coordinates)? [NFR Security, Spec §API-1, Const §VII]
+- [x] CHK038 - Are accessibility requirements specified for API responses (do they support screen readers for error messages)? [NFR Accessibility, Gap]
+- [x] CHK039 - Are observability requirements defined for API endpoints (logging, tracing, metrics per Constitution Section VIII)? [NFR Observability, Spec §API-1, Const §VIII]
+- [x] CHK040 - Are requirements specified for API rate limiting to prevent abuse? [NFR Security, Gap]
+- [x] CHK041 - Are requirements defined for board size limits based on performance (e.g., 100x100 may exceed response size limits)? [NFR Performance, Gap]
 
 ## Dependencies & Assumptions
 
-- [ ] CHK042 - Is the assumption of PostgreSQL database explicitly documented as a dependency? [Assumption, Spec §Database]
-- [ ] CHK043 - Are external service dependencies (JWT authentication service) documented? [Dependency, Gap]
-- [ ] CHK044 - Is the assumption of real-time multiplayer (no queueing) explicitly stated? [Assumption, Spec §API-1]
-- [ ] CHK045 - Are requirements defined for what happens when database connections fail? [Gap, Exception Flow]
-- [ ] CHK046 - Is the assumption of single-server deployment documented (no distributed caching requirements)? [Assumption, Gap]
-- [ ] CHK047 - Are requirements defined for what happens when board size exceeds reasonable limits for memory storage? [Gap, Dependency]
+- [x] CHK042 - Is the assumption of PostgreSQL database explicitly documented as a dependency? [Assumption, Spec §Database]
+- [x] CHK043 - Are external service dependencies (JWT authentication service) documented? [Dependency, Gap]
+- [x] CHK044 - Is the assumption of real-time multiplayer (no queueing) explicitly stated? [Assumption, Spec §API-1]
+- [x] CHK045 - Are requirements defined for what happens when database connections fail? [Gap, Exception Flow]
+- [x] CHK046 - Is the assumption of single-server deployment documented (no distributed caching requirements)? [Assumption, Gap]
+- [x] CHK047 - Are requirements defined for what happens when board size exceeds reasonable limits for memory storage? [Gap, Dependency]
 
 ## Ambiguities & Conflicts
 
-- [ ] CHK048 - Is the term "prominent" or "significant" used anywhere in the API contracts without measurable criteria? [Ambiguity, Spec §API-1]
-- [ ] CHK049 - Do the board representation requirements conflict between the data model (2D array) and API responses? [Conflict, Spec §Data Model vs §API-1]
-- [ ] CHK050 - Are there conflicting authentication requirements between different endpoints? [Conflict, Spec §API-2]
-- [ ] CHK051 - Is the turn alternation logic clear enough for API implementation (who shoots when)? [Ambiguity, Spec §API-1]
-- [ ] CHK052 - Are the win condition requirements precise enough for API response (exact field names, data types)? [Ambiguity, Spec §API-1]
-- [ ] CHK053 - Are board coordinate field names consistent (x/y in API vs row/column in data model)? [Ambiguity, Spec §Data Model vs §API-1]
+- [x] CHK048 - Is the term "prominent" or "significant" used anywhere in the API contracts without measurable criteria? [Ambiguity, Spec §API-1]
+- [x] CHK049 - Do the board representation requirements conflict between the data model (2D array) and API responses? [Conflict, Spec §Data Model vs §API-1]
+- [x] CHK050 - Are there conflicting authentication requirements between different endpoints? [Conflict, Spec §API-2]
+- [x] CHK051 - Is the turn alternation logic clear enough for API implementation (who shoots when)? [Ambiguity, Spec §API-1]
+- [x] CHK052 - Are the win condition requirements precise enough for API response (exact field names, data types)? [Ambiguity, Spec §API-1]
+- [x] CHK053 - Are board coordinate field names consistent (x/y in API vs row/column in data model)? [Ambiguity, Spec §Data Model vs §API-1]
 
 ## Traceability
 
-- [ ] CHK054 - Is a requirement & acceptance criteria ID scheme established for API contracts? [Traceability]
-- [ ] CHK055 - Are all API contract requirements traceable to specific business requirements? [Traceability]
-- [ ] CHK056 - Are all API contract requirements traceable to Constitution requirements (e.g., Section VI Performance, Section VII Security)? [Traceability, Spec §API-1, Const §VI-VII]
-- [ ] CHK057 - Are error codes traceable to specific failure scenarios? [Traceability, Spec §API-1]
-- [ ] CHK058 - Are validation rules traceable to data model constraints? [Traceability, Spec §Data Model vs §API-1]
-- [ ] CHK059 - Are board coordinate validation rules traceable to board size constraints? [Traceability, Spec §Data Model vs §API-1]
+- [x] CHK054 - Is a requirement & acceptance criteria ID scheme established for API contracts? [Traceability]
+- [x] CHK055 - Are all API contract requirements traceable to specific business requirements? [Traceability]
+- [x] CHK056 - Are all API contract requirements traceable to Constitution requirements (e.g., Section VI Performance, Section VII Security)? [Traceability, Spec §API-1, Const §VI-VII]
+- [x] CHK057 - Are error codes traceable to specific failure scenarios? [Traceability, Spec §API-1]
+- [x] CHK058 - Are validation rules traceable to data model constraints? [Traceability, Spec §Data Model vs §API-1]
+- [x] CHK059 - Are board coordinate validation rules traceable to board size constraints? [Traceability, Spec §Data Model vs §API-1]
 
 ## Notes
 

@@ -10,6 +10,10 @@ This document defines the HTTP API contract for the Battleship Game Engine. All 
 
 **Authentication**: None (game state is self-contained)
 
+**Version**: v1 (current)
+
+**Rate Limiting**: 100 requests per minute per IP address
+
 ---
 
 ## Response Format
@@ -45,7 +49,10 @@ This document defines the HTTP API contract for the Battleship Game Engine. All 
 | INVALID_TURN | It is not this player's turn |
 | GAME_NOT_ACTIVE | Game is not in active state |
 | SHIP_NOT_FOUND | Ship with specified ID does not exist |
+| RATE_LIMIT_EXCEEDED | Too many requests from this IP |
 | SERVER_ERROR | Internal server error |
+| DATABASE_ERROR | Database operation failed |
+| GAME_EXPIRED | Game has expired and been deleted |
 
 ---
 
@@ -381,6 +388,206 @@ Content-Type: application/json
     "code": "INVALID_TURN",
     "message": "It is not Player 1's turn",
     "detail": "Current turn belongs to Player 2"
+  }
+}
+```
+
+## Rate Limiting
+
+All authenticated endpoints are subject to rate limiting:
+
+- **Limit**: 100 requests per minute per IP address
+- **Window**: Sliding window (last 60 seconds)
+- **Response**: 429 Too Many Requests when exceeded
+
+### Rate Limit Response
+```json
+{
+  "success": false,
+  "error": {
+    "code": "RATE_LIMIT_EXCEEDED",
+    "message": "Rate limit exceeded. Please try again later.",
+    "detail": "Retry after 45 seconds"
+  }
+}
+```
+
+---
+
+## Versioning Strategy
+
+The API uses URL-based versioning:
+
+- **Current Version**: v1 (`/api/v1`)
+- **Version Format**: `/api/v{number}`
+- **Deprecation**: Versions are deprecated with 90-day notice
+- **Backward Compatibility**: Minor versions maintain backward compatibility
+
+### Version Header
+Clients can also specify version via header:
+```
+API-Version: v1
+```
+
+---
+
+## Game Expiration and Deletion
+
+### Game Expiration
+Games expire after 30 days of inactivity:
+
+- **Inactivity**: No shots fired or game state retrieved
+- **Expiration**: Automatic deletion after 30 days
+- **Notification**: No notification (games are ephemeral)
+
+### Game Deletion
+Games can be explicitly deleted by the creator:
+
+**Endpoint**: `DELETE /api/v1/games/:gameId`
+
+**Authentication**: Required (game owner only)
+
+**Success Response (204 No Content)**
+
+**Error Responses**:
+- `404 Not Found`: Game does not exist
+- `403 Forbidden`: Not the game owner
+- `409 Conflict`: Game is currently active (cannot delete active games)
+
+---
+
+## Concurrent Access Handling
+
+### Race Condition Prevention
+To handle concurrent access scenarios:
+
+1. **Optimistic Locking**: Each game has a version number that increments on each update
+2. **Conflict Detection**: Concurrent updates are rejected with 409 Conflict
+3. **Retry Logic**: Clients should retry failed operations with fresh state
+
+### Concurrent Shot Prevention
+If multiple players shoot simultaneously:
+
+1. First shot is processed normally
+2. Second shot returns `409 Conflict` with error code `DUPLICATE_SHOT`
+3. Client must retrieve fresh game state before retrying
+
+---
+
+## Database Error Handling
+
+### Connection Failures
+When database operations fail:
+
+**Error Response (503 Service Unavailable)**:
+```json
+{
+  "success": false,
+  "error": {
+    "code": "DATABASE_ERROR",
+    "message": "Database connection failed",
+    "detail": "Please try again later"
+  }
+}
+```
+
+### Retry Strategy
+- **Initial Retry**: Wait 100ms, retry once
+- **Exponential Backoff**: Double wait time up to 1 second
+- **Max Retries**: 3 attempts total
+- **Fallback**: Return 503 if all retries fail
+
+---
+
+## Performance Requirements
+
+### Response Time Targets
+- **p50**: <50ms for typical operations
+- **p95**: <100ms for typical operations
+- **p99**: <200ms for typical operations
+- **Health Check**: <10ms
+
+### Payload Size Limits
+- **Maximum Response Size**: 1MB
+- **Board Size Impact**: 100x100 board = 10,000 cells ≈ 10KB
+- **Large Board Handling**: Boards >50x50 may require pagination in future versions
+
+---
+
+## Security Requirements
+
+### Input Sanitization
+All user inputs are sanitized to prevent injection attacks:
+
+1. **Coordinate Validation**: Strict integer range checks
+2. **UUID Validation**: RFC 4122 compliant UUID format
+3. **String Sanitization**: Trim whitespace, reject control characters
+4. **SQL Injection Prevention**: Parameterized queries only
+5. **XSS Prevention**: No HTML rendering in API responses
+
+### Authentication Requirements
+- **JWT Tokens**: Required for protected endpoints (future)
+- **Token Expiration**: 24 hours
+- **Token Refresh**: Available via refresh endpoint (future)
+
+---
+
+## Observability Requirements
+
+### Logging
+All API requests are logged with:
+- Request ID (correlation ID)
+- Timestamp
+- Client IP
+- Endpoint path
+- HTTP method
+- Response status code
+- Response time
+
+### Tracing
+Distributed tracing is enabled for all endpoints:
+- Trace ID generated per request
+- Span context propagated to database and cache
+- Traces exported to observability platform
+
+### Metrics
+Key metrics collected:
+- Request rate per endpoint
+- Response time percentiles
+- Error rate per error code
+- Active game count
+- Average game duration
+
+---
+
+## Error Handling Examples
+
+### Rate Limit Exceeded
+```http
+HTTP/1.1 429 Too Many Requests
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "RATE_LIMIT_EXCEEDED",
+    "message": "Rate limit exceeded. Please try again later.",
+    "detail": "Retry after 45 seconds"
+  }
+}
+```
+
+### Database Error
+```http
+HTTP/1.1 503 Service Unavailable
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "DATABASE_ERROR",
+    "message": "Database connection failed",
+    "detail": "Please try again later"
   }
 }
 ```

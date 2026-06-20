@@ -23,13 +23,14 @@
 
 ---
 
-## Phase 1: Setup (Shared Infrastructure)
+## Phase 1: Setup (Project Initialization)
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create project structure per implementation plan: `src/models/`, `src/services/`, `src/adapters/api/`, `src/adapters/db/`, `src/lib/`, `tests/unit/`, `tests/integration/`, `tests/contract/`
-- [ ] T002 Initialize Go project with `go mod init battleship-game-engine` and add dependencies (gin, gorm, postgres, zap, otel, prometheus, jwt, limiter, validator)
-- [ ] T003 [P] Configure linting (golangci-lint) and formatting (gofmt) tools in `.golangci.yml` and `Makefile`
+- [X] T001 Create project structure per implementation plan in `src/`, `tests/`, `docker-compose.yml`, `Dockerfile`
+- [X] T002 Initialize Go project with `go mod init battleship-game-engine` and add dependencies (gin, gorm, postgres, zap, otel, prometheus, jwt, limiter, validator)
+- [X] T003 [P] Configure linting (golangci-lint) and formatting (gofmt) tools in `.golangci.yml` and `Makefile`
+- [X] T004 [P] Create `Makefile` with common commands (build, test, lint, run, migrate)
 
 ---
 
@@ -39,120 +40,129 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Setup database schema and migrations framework: Create `src/adapters/db/models.go` with GORM models (Game, Board, Ship, Player) and `src/adapters/db/migrate.go` for migration management
-- [ ] T005 [P] Implement authentication/authorization framework: Create `src/adapters/gin/middleware/jwt.go` with JWT middleware and `src/adapters/gin/middleware/authorization.go` with player access control
-- [ ] T006 [P] Setup API routing and middleware structure: Create `src/adapters/gin/router.go` with middleware chain (security headers, rate limiting, error handler, tracing, correlation ID, logging, recovery)
-- [ ] T007 Create base models/entities that all stories depend on: Create `src/models/game.go`, `src/models/board.go`, `src/models/ship.go`, `src/models/player.go` with core business rules
-- [ ] T008 Configure error handling and logging infrastructure: Create `src/lib/logger/logger.go` with zap configuration and `src/lib/validation/validation.go` for input validation
-- [ ] T009 Setup environment configuration management: Create `src/config/config.go` for loading environment variables (database URL, JWT secret, rate limits, etc.)
-- [ ] T010 [P] Create health check endpoints: Create `src/adapters/gin/handlers/health.go` with `/health/live` and `/health/ready` endpoints
-- [ ] T010a [P] Create entity-to-database mapper functions: Create `src/adapters/db/mappers.go` with mapper functions for Game, Board, Ship, and Player entities (ToGame, ToGameDB, ToBoard, ToBoardDB, ToShip, ToShipDB, ToPlayer, ToPlayerDB)
-
-**Checkpoint**: Foundation ready - user story implementation can now begin in parallel
+- [X] T005 Setup database schema and migrations framework in `src/adapters/db/migrate/`
+- [X] T006 [P] Implement logging infrastructure in `lib/logger/logger.go` using zap with layer-based log levels
+- [X] T007 [P] Implement tracing infrastructure in `lib/tracing/tracing.go` using OpenTelemetry SDK
+- [X] T008 [P] Implement metrics infrastructure in `lib/metrics/metrics.go` using Prometheus client library
+- [X] T009 [P] Create correlation ID middleware in `src/adapters/gin/middleware/correlationid.go`
+- [X] T010 [P] Create health check endpoints in `src/adapters/gin/handlers/health.go` (`/health/live`, `/health/ready`)
+- [X] T011 [P] Create security headers middleware in `src/adapters/gin/middleware/securityheaders.go`
+- [X] T012 [P] Create rate limiting middleware in `src/adapters/gin/middleware/ratelimit.go`
+- [X] T013 [P] Create error handler middleware in `src/adapters/gin/middleware/errorhandler.go`
+- [X] T014 [P] Create JWT authentication middleware in `src/adapters/gin/middleware/jwt.go`
+- [X] T015 [P] Create player authorization middleware in `src/adapters/gin/middleware/authorization.go`
+- [X] T016 Create base models/entities in `src/models/` (Game, Board, Ship, Player, GameStats - database-independent)
+- [X] T017 Create database models in `src/adapters/db/models.go` (GameDB, BoardDB, ShipDB, PlayerDB with GORM tags)
+- [X] T018 Create mapper functions in `src/adapters/db/mappers.go` (ToGame, ToGameDB, etc.)
+- [X] T019 Create repository interface in `src/models/game_repository.go` and implementation in `src/adapters/db/game_repository.go`
+- [X] T020 Configure environment configuration management in `config/config.go` and `config/.env.example`
+- [X] T021 Setup API routing structure in `src/adapters/gin/router.go` with middleware chain and route groups
+- [X] T022 Create validation package in `src/validation/api.go` with request structs and struct tags
 
 ---
 
 ## Phase 3: User Story 1 - Single Player Battleship Game (Priority: P1) 🎯 MVP
 
-**Goal**: Enable a single player to start a new Battleship game, take turns shooting at the computer's ships, and see visual feedback until all enemy ships are sunk
+**Goal**: Implement core game functionality for single-player Battleship with startGame() and shoot() functions
 
 **Independent Test**: Call startGame() with default 8x8 board, repeatedly call shoot() with valid coordinates until all ships are sunk, verifying all required data is returned correctly
 
 ### Implementation for User Story 1
 
-- [ ] T011 [P] [US1] Create Ship entity model in `src/models/ship.go` with placement logic and hit tracking
-- [ ] T012 [P] [US1] Create Board entity model in `src/models/board.go` with cell state management (space/O/X)
-- [ ] T013 [P] [US1] Create Game entity model in `src/models/game.go` with turn management and win detection
-- [ ] T014 [US1] Implement GameService in `src/services/game_service.go` with startGame() and shoot() methods
-- [ ] T015 [US1] Implement Game API handlers in `src/adapters/gin/handlers/game.go` for POST /games and POST /games/:game_id/shoot
-- [ ] T016 [US1] Add input validation for board size (5-100) and coordinates (0 to N-1) in `src/lib/validation/game.go`
-- [ ] T017 [US1] Add logging for game operations in `src/services/game_service.go` (INFO for operations, ERROR for failures)
-- [ ] T018 [US1] Implement ship placement retry logic (max 100 attempts) in `src/models/ship.go`
-
-**Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
+- [X] T023 [P] [US1] Create Ship entity in `src/models/ship.go` with id, type, length, positions, hits, sunk fields
+- [X] T024 [P] [US1] Create Board entity in `src/models/board.go` with cells tracking (space=untargeted, O=miss, X=hit)
+- [X] T025 [P] [US1] Create Game entity in `src/models/game.go` with board state, ships, turn tracking, status
+- [X] T026 [US1] Implement Ship placement logic in `src/services/ship_placer.go` using rejection sampling (100 attempts max)
+- [X] T027 [US1] Implement Game service in `src/services/game_service.go` with startGame() and shoot() functions
+- [X] T028 [US1] Implement Game controller in `src/adapters/gin/controllers/game_controller.go` with HTTP handlers
+- [X] T029 [US1] Add API endpoint for startGame in `src/adapters/gin/routes.go` (POST /api/v1/games)
+- [X] T030 [US1] Add API endpoint for shoot in `src/adapters/gin/routes.go` (POST /api/v1/games/:game_id/shoot)
+- [X] T031 [US1] Add input validation for board size (5x5 to 100x100) in `src/validation/api.go`
+- [X] T032 [US1] Add input validation for coordinates (0 to rows-1, 0 to columns-1) in `src/validation/api.go`
+- [X] T033 [US1] Add duplicate shot detection in `src/services/game_service.go`
+- [X] T034 [US1] Add boundary validation for shots in `src/services/game_service.go`
+- [X] T035 [US1] Add logging for game operations in `src/services/game_service.go` (INFO/WARN levels)
+- [X] T036 [US1] Add metrics collection for game starts and shots in `lib/metrics/metrics.go`
 
 ---
 
 ## Phase 4: User Story 2 - Display Game Board State (Priority: P1)
 
-**Goal**: Enable users to see the current state of the game board showing which cells have been targeted and whether those shots were hits or misses
+**Goal**: Implement board state display functionality showing hits and misses
 
-**Independent Test**: Verify the hits/misses array is properly formatted and displays correctly as a 2D grid showing O for misses and X for hits
+**Independent Test**: Verify hits/misses array is properly formatted and displays correctly as 2D grid showing O for misses and X for hits
 
 ### Implementation for User Story 2
 
-- [ ] T019 [P] [US2] Create Board display helper in `src/lib/display/board_display.go` for converting board state to 2D character grid
-- [ ] T020 [US2] Implement board state retrieval endpoint in `src/adapters/gin/handlers/game.go` for GET /games/:game_id
-- [ ] T021 [US2] Add board visualization to game state response in `src/adapters/gin/handlers/game.go`
-
-**Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
+- [X] T037 [US2] Implement board state retrieval in `src/services/game_service.go` (getGameState function)
+- [X] T038 [US2] Add API endpoint for getGameState in `src/adapters/gin/routes.go` (GET /api/v1/games/:game_id)
+- [X] T039 [US2] Add board visualization helper in `src/adapters/gin/helpers/board_visualizer.go`
+- [X] T040 [US2] Add logging for board state retrieval in `src/services/game_service.go`
 
 ---
 
 ## Phase 5: User Story 3 - Two Player Alternate Turns (Priority: P2)
 
-**Goal**: Enable two players to take turns playing Battleship on the same terminal, with each player seeing their own board and the opponent's targeted cells
+**Goal**: Implement multiplayer support with turn alternation
 
-**Independent Test**: Start a 2-player game, verify turn alternation works correctly, and ensure each player sees only their own board state
+**Independent Test**: Start 2-player game, verify turn alternation works correctly, ensure each player sees only their own board state
 
 ### Implementation for User Story 3
 
-- [ ] T022 [P] [US3] Update Game entity to support multiple players in `src/models/game.go` with player-specific board tracking
-- [ ] T023 [P] [US3] Update Ship entity for multi-player support in `src/models/ship.go` with player association
-- [ ] T024 [US3] Implement turn alternation logic in `src/services/game_service.go` for shoot() method
-- [ ] T025 [US3] Add turn enforcement middleware in `src/adapters/gin/middleware/turn.go` to reject out-of-turn shots
-- [ ] T026 [US3] Update game state endpoint to return player-specific board in `src/adapters/gin/handlers/game.go`
-
-**Checkpoint**: At this point, User Stories 1, 2, AND 3 should all work independently
+- [X] T041 [US3] Update Game entity to support multiple players in `src/models/game.go` (numPlayers, currentPlayer fields)
+- [X] T042 [US3] Update Ship entity to support per-player ships in `src/models/ship.go`
+- [X] T043 [US3] Update Board entity to support per-player boards in `src/models/board.go`
+- [X] T044 [US3] Implement turn alternation logic in `src/services/game_service.go`
+- [X] T045 [US3] Add out-of-turn shot rejection in `src/services/game_service.go`
+- [X] T046 [US3] Add player authorization check in `src/adapters/gin/middleware/authorization.go`
+- [X] T047 [US3] Add API endpoint for shoot with player_id in `src/adapters/gin/routes.go`
+- [X] T048 [US3] Add logging for multiplayer operations in `src/services/game_service.go`
 
 ---
 
 ## Phase 6: User Story 4 - Game Statistics Display (Priority: P2)
 
-**Goal**: Enable users to view game statistics at any time during gameplay without interrupting the game flow
+**Goal**: Implement gameStats() function for displaying game metrics
 
 **Independent Test**: Call gameStats() at various points in the game and verify all metrics are accurate
 
 ### Implementation for User Story 4
 
-- [ ] T027 [P] [US4] Create GameStats entity in `src/models/stats.go` with metrics calculation
-- [ ] T028 [US4] Implement StatsService in `src/services/stats_service.go` with gameStats() method
-- [ ] T029 [US4] Implement game statistics endpoint in `src/adapters/gin/handlers/game.go` for GET /games/:game_id/stats
-- [ ] T030 [US4] Add statistics logging in `src/services/stats_service.go` for observability
-
-**Checkpoint**: At this point, User Stories 1-4 should all work independently
+- [X] T049 [US4] Create GameStats entity in `src/models/game_stats.go` with turns, hits, misses, shipsRemaining
+- [X] T050 [US4] Implement gameStats() function in `src/services/game_service.go`
+- [X] T051 [US4] Add API endpoint for gameStats in `src/adapters/gin/routes.go` (GET /api/v1/games/:game_id/stats)
+- [X] T052 [US4] Add logging for stats retrieval in `src/services/game_service.go`
 
 ---
 
 ## Phase 7: User Story 5 - Configurable Game Parameters (Priority: P2)
 
-**Goal**: Enable users to specify board size and number of players when starting a game
+**Goal**: Implement configurable board size and player count
 
-**Independent Test**: Call startGame() with various parameters and verify the board is created with the specified dimensions
+**Independent Test**: Call startGame() with various parameters and verify board is created with specified dimensions
 
 ### Implementation for User Story 5
 
-- [ ] T031 [P] [US5] Update Game entity for configurable board size in `src/models/game.go` with board_rows and board_columns fields
-- [ ] T032 [US5] Implement board size validation in `src/lib/validation/game.go` (min 5x5, max 100x100)
-- [ ] T033 [US5] Update GameService to accept board size parameters in `src/services/game_service.go`
-- [ ] T034 [US5] Update API request body for configurable parameters in `src/adapters/gin/handlers/game.go`
-
-**Checkpoint**: At this point, User Stories 1-5 should all work independently
+- [X] T053 [US5] Update startGame() to accept board_rows and board_columns parameters in `src/services/game_service.go`
+- [X] T054 [US5] Update startGame() to accept num_players parameter in `src/services/game_service.go`
+- [X] T055 [US5] Add board size validation (min 5x5, max 100x100) in `src/validation/api.go`
+- [X] T056 [US5] Add player count validation (1 or 2) in `src/validation/api.go`
+- [X] T057 [US5] Add logging for configurable game parameters in `src/services/game_service.go`
 
 ---
 
 ## Phase 8: User Story 6 - Play Again Flow (Priority: P2)
 
-**Goal**: Enable users to start a new game without restarting the application after completing a game
+**Goal**: Implement play-again functionality after game completion
 
-**Independent Test**: Complete a game, verify the play-again prompt is shown, and verify new games start cleanly
+**Independent Test**: Complete a game, verify play-again prompt is shown, verify new games start cleanly
 
 ### Implementation for User Story 6
 
-- [ ] T035 [US6] Implement game reset logic in `src/services/game_service.go` for clearing previous game state
-- [ ] T036 [US6] Add victory detection and play-again prompt in `src/services/game_service.go`
-
-**Checkpoint**: All user stories should now be independently functional
+- [X] T058 [US6] Add game completion detection in `src/services/game_service.go`
+- [X] T059 [US6] Add victory message generation in `src/services/game_service.go`
+- [X] T060 [US6] Add play-again prompt support in `src/adapters/gin/controllers/game_controller.go`
+- [X] T061 [US6] Add new game state clearing in `src/services/game_service.go`
 
 ---
 
@@ -160,16 +170,15 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T037 [P] Documentation updates in `docs/api.md` for all endpoints
-- [ ] T038 [P] Code cleanup and refactoring across all layers
-- [ ] T039 [P] Performance optimization for ship placement algorithm in `src/models/ship.go`
-- [ ] T040 [P] Additional unit tests in `tests/unit/` for edge cases (EC-001 through EC-013) with explicit test cases for each edge case
-- [ ] T041 [P] Error sanitization middleware in `src/adapters/gin/middleware/errorhandler.go` that sanitizes error messages (no stack traces, file paths, or internal state) and adds `error_code` field to all error responses
-- [ ] T041a [P] Error code constants in `src/lib/errors/errors.go` with standardized error codes (INVALID_BOARD_SIZE, INVALID_COORDINATES, GAME_NOT_FOUND, etc.) and HTTP status code mapping
-- [ ] T042 Run quickstart.md validation scenarios 1-5
-- [ ] T043 [P] Configure log rotation in `src/lib/logger/logger.go`
-- [ ] T044 [P] Setup Prometheus metrics collection in `src/lib/metrics/metrics.go`
-- [ ] T045 [P] Performance testing in `tests/integration/performance_test.go` with API response time validation (100ms target for standard board sizes) and load testing (1000 games/minute throughput)
+- [X] T062 [P] Create comprehensive documentation in `docs/` (API documentation, architecture overview)
+- [X] T063 Code cleanup and refactoring across all layers
+- [X] T064 Performance optimization across all services (ensure <100ms p95 for typical operations)
+- [X] T065 [P] Additional unit tests in `tests/unit/` (target 95%+ for core logic)
+- [X] T066 [P] Additional integration tests in `tests/integration/` (target 80%+ for adapters)
+- [X] T067 [P] Additional contract tests in `tests/contract/` for all API endpoints
+- [X] T068 Security hardening (input validation, access control review)
+- [X] T069 Run quickstart.md validation scenarios
+- [X] T070 Performance testing (1000 sequential games/minute, <100ms response time)
 
 ---
 
@@ -180,23 +189,22 @@
 - **Setup (Phase 1)**: No dependencies - can start immediately
 - **Foundational (Phase 2)**: Depends on Setup completion - BLOCKS all user stories
 - **User Stories (Phase 3+)**: All depend on Foundational phase completion
-  - User stories can then proceed in parallel (if staffed)
-  - Or sequentially in priority order (P1 → P2 → P3)
+  - User stories can then proceed in parallel (if staffed) or sequentially in priority order (P1 → P2 → P3)
 - **Polish (Phase 9)**: Depends on all desired user stories being complete
 
 ### User Story Dependencies
 
 - **User Story 1 (P1)**: Can start after Foundational (Phase 2) - No dependencies on other stories
 - **User Story 2 (P1)**: Can start after Foundational (Phase 2) - Depends on US1 board state
-- **User Story 3 (P2)**: Can start after Foundational (Phase 2) - Depends on US1 game state
-- **User Story 4 (P2)**: Can start after Foundational (Phase 2) - Depends on US1 game state
-- **User Story 5 (P2)**: Can start after Foundational (Phase 2) - Depends on US1 game state
-- **User Story 6 (P2)**: Can start after Foundational (Phase 2) - Depends on US1 victory detection
+- **User Story 3 (P2)**: Can start after Foundational (Phase 2) - Depends on US1 core game logic
+- **User Story 4 (P2)**: Can start after Foundational (Phase 2) - Depends on US1 game state tracking
+- **User Story 5 (P2)**: Can start after Foundational (Phase 2) - Depends on US1 startGame implementation
+- **User Story 6 (P2)**: Can start after Foundational (Phase 2) - Depends on US1 game completion detection
 
 ### Within Each User Story
 
 - Models before services
-- Services before endpoints
+- Services before controllers/endpoints
 - Core implementation before integration
 - Story complete before moving to next priority
 
@@ -210,13 +218,17 @@
 
 ---
 
-## Parallel Example: User Story 1
+## Parallel Example: Foundational Phase
 
 ```bash
-# Launch all models for User Story 1 together:
-Task: "Create Ship entity model in src/models/ship.go"
-Task: "Create Board entity model in src/models/board.go"
-Task: "Create Game entity model in src/models/game.go"
+# Launch all middleware tasks in parallel:
+Task: "Create correlation ID middleware in src/adapters/gin/middleware/correlationid.go"
+Task: "Create health check endpoints in src/adapters/gin/handlers/health.go"
+Task: "Create security headers middleware in src/adapters/gin/middleware/securityheaders.go"
+Task: "Create rate limiting middleware in src/adapters/gin/middleware/ratelimit.go"
+Task: "Create error handler middleware in src/adapters/gin/middleware/errorhandler.go"
+Task: "Create JWT authentication middleware in src/adapters/gin/middleware/jwt.go"
+Task: "Create player authorization middleware in src/adapters/gin/middleware/authorization.go"
 ```
 
 ---
@@ -227,7 +239,7 @@ Task: "Create Game entity model in src/models/game.go"
 
 1. Complete Phase 1: Setup
 2. Complete Phase 2: Foundational (CRITICAL - blocks all stories)
-3. Complete Phase 3: User Story 1
+3. Complete Phase 3: User Story 1 (Single Player Battleship)
 4. **STOP and VALIDATE**: Test User Story 1 independently
 5. Deploy/demo if ready
 
@@ -248,12 +260,12 @@ With multiple developers:
 
 1. Team completes Setup + Foundational together
 2. Once Foundational is done:
-   - Developer A: User Story 1 (models + service + endpoint)
-   - Developer B: User Story 2 (board display + endpoint)
-   - Developer C: User Story 3 (multiplayer support)
-   - Developer D: User Story 4 (statistics)
-   - Developer E: User Story 5 (configurable parameters)
-   - Developer F: User Story 6 (play again flow)
+   - Developer A: User Story 1 (Single Player)
+   - Developer B: User Story 2 (Board Display)
+   - Developer C: User Story 3 (Two Player)
+   - Developer D: User Story 4 (Game Stats)
+   - Developer E: User Story 5 (Configurable Parameters)
+   - Developer F: User Story 6 (Play Again Flow)
 3. Stories complete and integrate independently
 
 ---
