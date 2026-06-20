@@ -35,8 +35,10 @@ This is a **game engine only** - a backend API service that handles:
 
 ## API Documentation
 
+Comprehensive API documentation is available in `docs/API.md`.
+
 Once the server is running, access:
-- API documentation: `http://localhost:8080/api/v1`
+- API documentation: `docs/API.md` (this file)
 - Health check (liveness): `http://localhost:8080/health/live`
 - Health check (readiness): `http://localhost:8080/health/ready`
 
