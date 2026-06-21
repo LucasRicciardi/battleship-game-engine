@@ -21,7 +21,7 @@ func ErrorHandlerMiddleware() gin.HandlerFunc {
 			sanitizedMsg := sanitizeErrorMessage(err.Error())
 			
 			// Log the error with correlation ID
-			correlationID := getCorrelationID(c)
+			correlationID := getCorrelationIDFromContext(c)
 			logger.Errorf("[%s] Error: %v", correlationID, err)
 
 			// Return appropriate status code
@@ -83,6 +83,7 @@ func removeFilePaths(msg string) string {
 	for _, r := range replacements {
 		// Simple string replacement for now
 		// In production, use proper regex
+		_ = r // Avoid unused variable warning
 	}
 	
 	return result
@@ -103,13 +104,15 @@ func removeDBInfo(msg string) string {
 	result := msg
 	for _, r := range replacements {
 		// Simple string replacement for now
+		// In production, use proper regex
+		_ = r // Avoid unused variable warning
 	}
 	
 	return result
 }
 
-// getCorrelationID retrieves the correlation ID from context
-func getCorrelationID(c *gin.Context) string {
+// getCorrelationIDFromContext retrieves the correlation ID from context
+func getCorrelationIDFromContext(c *gin.Context) string {
 	if val, ok := c.Get("correlation_id"); ok {
 		if id, ok := val.(string); ok {
 			return id

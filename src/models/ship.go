@@ -2,13 +2,13 @@ package models
 
 // Ship represents a ship in the Battleship game
 type Ship struct {
-	ID        string   `json:"id"`
-	Type      string   `json:"type"`
-	Length    int      `json:"length"`
-	Positions []Cell   `json:"positions"`
-	Hits      int      `json:"hits"`
-	Sunk      bool     `json:"sunk"`
-	OwnerID   string   `json:"owner_id,omitempty"`
+	ID        string `json:"id"`
+	Type      string `json:"type"`
+	Length    int    `json:"length"`
+	Positions []Cell `json:"positions"`
+	Hits      int    `json:"hits"`
+	Sunk      bool   `json:"sunk"`
+	OwnerID   string `json:"owner_id,omitempty"`
 }
 
 // Cell represents a cell position on the board

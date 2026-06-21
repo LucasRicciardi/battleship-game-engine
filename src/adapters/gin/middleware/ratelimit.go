@@ -2,33 +2,81 @@ package middleware
 
 import (
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/ulule/limiter/v3"
-	"github.com/ulule/limiter/v3/drivers/memory"
 )
+
+// SimpleRateLimiter implements a basic in-memory rate limiter
+type SimpleRateLimiter struct {
+	mu       sync.Mutex
+	requests map[string][]time.Time
+	limit    int
+	window   time.Duration
+}
+
+// NewSimpleRateLimiter creates a new rate limiter
+func NewSimpleRateLimiter(limit int, window time.Duration) *SimpleRateLimiter {
+	return &SimpleRateLimiter{
+		requests: make(map[string][]time.Time),
+		limit:    limit,
+		window:   window,
+	}
+}
+
+// Allow checks if a request is allowed for the given client IP
+func (rl *SimpleRateLimiter) Allow(clientIP string) error {
+	rl.mu.Lock()
+	defer rl.mu.Unlock()
+
+	now := time.Now()
+	windowStart := now.Add(-rl.window)
+
+	// Get or create request history for this client
+	times, exists := rl.requests[clientIP]
+	if !exists {
+		times = []time.Time{}
+	}
+
+	// Filter out old requests outside the window
+	var validTimes []time.Time
+	for _, t := range times {
+		if t.After(windowStart) {
+			validTimes = append(validTimes, t)
+		}
+	}
+
+	// Check if limit exceeded
+	if len(validTimes) >= rl.limit {
+		rl.requests[clientIP] = validTimes
+		return &RateLimitError{RetryAfter: rl.window}
+	}
+
+	// Add current request
+	validTimes = append(validTimes, now)
+	rl.requests[clientIP] = validTimes
+	return nil
+}
+
+// RateLimitError represents a rate limit exceeded error
+type RateLimitError struct {
+	RetryAfter time.Duration
+}
+
+func (e *RateLimitError) Error() string {
+	return "Rate limit exceeded"
+}
 
 // RateLimitMiddleware creates a rate limiter middleware
 func RateLimitMiddleware() gin.HandlerFunc {
-	// Create memory store for rate limiting
-	store := memory.NewStore()
-
-	// Create rate limiter configuration
-	rate := limiter.Rate{
-		Period: 60 * time.Second,
-		Limit:  100, // 100 requests per minute
-	}
-
-	// Create limiter instance
-	limit := limiter.New(store, rate)
+	// Create rate limiter: 100 requests per minute
+	limiter := NewSimpleRateLimiter(100, 60*time.Second)
 
 	return func(c *gin.Context) {
-		// Get client IP
 		clientIP := c.ClientIP()
 
-		// Check rate limit
-		if err := limit.Allow(clientIP); err != nil {
+		if err := limiter.Allow(clientIP); err != nil {
 			c.JSON(http.StatusTooManyRequests, gin.H{
 				"success": false,
 				"error":   "Rate limit exceeded",

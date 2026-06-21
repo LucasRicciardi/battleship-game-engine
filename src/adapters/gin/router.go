@@ -40,8 +40,9 @@ func NewRouter() *gin.Engine {
 		}
 		
 		// Protected routes (auth required)
+		jwtMiddleware := middleware.NewJWTMiddleware("your-secret-key")
 		protected := v1.Group("/")
-		protected.Use(middleware.JWTMiddleware{SigningKey: []byte("your-secret-key")}.Middleware())
+		protected.Use(jwtMiddleware.Middleware())
 		{
 			// Games routes
 			games := protected.Group("/games")

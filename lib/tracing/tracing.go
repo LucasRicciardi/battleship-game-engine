@@ -3,21 +3,26 @@ package tracing
 import (
 	"context"
 	"fmt"
+
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
-	"go.opentelemetry.io/otel/sdk/trace"
+	"go.opentelemetry.io/otel/sdk/resource"
+	tracesdk "go.opentelemetry.io/otel/sdk/trace"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
+
 	"os"
 )
 
 var (
-	tracerProvider *trace.TracerProvider
-	tracer         otel.Tracer
+	tracerProvider *tracesdk.TracerProvider
+	tracer         trace.Tracer
 )
 
 // Init initializes the OpenTelemetry tracing
 func Init(serviceName string) error {
 	// Create exporter based on environment
-	var exporter trace.SpanExporter
+	var exporter tracesdk.SpanExporter
 	if os.Getenv("TRACING_EXPORT") == "stdout" {
 		var err error
 		exporter, err = stdouttrace.New(stdouttrace.WithPrettyPrint())
@@ -30,10 +35,19 @@ func Init(serviceName string) error {
 		exporter = &noOpExporter{}
 	}
 
+	// Create resource with service name
+	res, err := resource.New(context.Background(), resource.WithAttributes(
+		attribute.String("service.name", serviceName),
+		attribute.String("service.version", "1.0.0"),
+	))
+	if err != nil {
+		return fmt.Errorf("failed to create resource: %w", err)
+	}
+
 	// Create trace provider with the exporter
-	tracerProvider = trace.NewTracerProvider(
-		trace.WithSyncer(exporter),
-		trace.WithResource(newResource(serviceName)),
+	tracerProvider = tracesdk.NewTracerProvider(
+		tracesdk.WithSyncer(exporter),
+		tracesdk.WithResource(res),
 	)
 
 	// Set global tracer provider
@@ -52,53 +66,23 @@ func Shutdown() error {
 }
 
 // Tracer returns the global tracer
-func Tracer() otel.Tracer {
+func Tracer() trace.Tracer {
 	return tracer
 }
 
 // StartSpan starts a new span with the given name
 func StartSpan(ctx context.Context, name string) (context.Context, func()) {
-	return tracer.Start(ctx, name)
+	_, span := tracer.Start(ctx, name)
+	return ctx, func() { span.End() }
 }
 
 // noOpExporter is a no-op span exporter for when no tracing is configured
 type noOpExporter struct{}
 
-func (e *noOpExporter) ExportSpans(ctx context.Context, spans []trace.ReadOnlySpan) error {
+func (e *noOpExporter) ExportSpans(ctx context.Context, spans []tracesdk.ReadOnlySpan) error {
 	return nil
 }
 
 func (e *noOpExporter) Shutdown(ctx context.Context) error {
 	return nil
-}
-
-// newResource creates a new resource with service name
-func newResource(serviceName string) *Resource {
-	return &Resource{
-		Attributes: []Attribute{
-			{Key: "service.name", Value: StringValue(serviceName)},
-			{Key: "service.version", Value: StringValue("1.0.0")},
-		},
-	}
-}
-
-// Resource represents an OpenTelemetry resource
-type Resource struct {
-	Attributes []Attribute
-}
-
-// Attribute represents an attribute key-value pair
-type Attribute struct {
-	Key   string
-	Value Value
-}
-
-// Value represents an attribute value
-type Value struct {
-	StringValue string
-}
-
-// StringValue creates a string value
-func StringValue(s string) Value {
-	return Value{StringValue: s}
 }

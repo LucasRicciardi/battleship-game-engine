@@ -1,9 +1,10 @@
 package logger
 
 import (
+	"os"
+
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"os"
 )
 
 var (
@@ -15,16 +16,16 @@ var (
 func Init() {
 	config := zap.NewProductionConfig()
 	config.EncoderConfig.TimeKey = "timestamp"
-	config.EncoderConfig.EncodeTime = zap.ISO8601TimeEncoder
+	config.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 	config.EncoderConfig.MessageKey = "message"
 	config.EncoderConfig.LevelKey = "level"
 	config.EncoderConfig.CallerKey = "caller"
 	config.EncoderConfig.FunctionKey = "function"
 	config.EncoderConfig.StacktraceKey = "stacktrace"
-	config.EncoderConfig.EncodeLevel = zap.LowercaseLevelEncoder
-	config.EncoderConfig.EncodeCaller = zap.ShortCallerEncoder
-	config.EncoderConfig.EncodeDuration = zap.StringDurationEncoder
-	config.EncoderConfig.EncodeName = zap.FullNameEncoder
+	config.EncoderConfig.EncodeLevel = zapcore.LowercaseLevelEncoder
+	config.EncoderConfig.EncodeCaller = zapcore.ShortCallerEncoder
+	config.EncoderConfig.EncodeDuration = zapcore.StringDurationEncoder
+	config.EncoderConfig.EncodeName = zapcore.FullNameEncoder
 
 	// Set log level based on environment
 	if os.Getenv("LOG_LEVEL") != "" {

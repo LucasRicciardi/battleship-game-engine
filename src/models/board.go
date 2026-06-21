@@ -6,11 +6,11 @@ import (
 
 // Board represents the game board
 type Board struct {
-	Rows      int         `json:"rows"`
-	Columns   int         `json:"columns"`
-	Cells     [][]CellState `json:"cells"`
-	Ships     []Ship      `json:"ships,omitempty"`
-	OwnerID   string      `json:"owner_id,omitempty"`
+	Rows    int           `json:"rows"`
+	Columns int           `json:"columns"`
+	Cells   [][]CellState `json:"cells"`
+	Ships   []Ship        `json:"ships,omitempty"`
+	OwnerID string        `json:"owner_id,omitempty"`
 }
 
 // CellState represents the state of a cell on the board
@@ -18,12 +18,12 @@ type CellState string
 
 const (
 	// Cell states
-	Empty       CellState = " "   // Untargeted
-	Miss        CellState = "O"   // Missed shot
-	Hit         CellState = "X"   // Hit shot
-	Ship        CellState = "S"   // Ship position (hidden in opponent view)
-	ShipHit     CellState = "*"   // Ship position that was hit
-	ShipMiss    CellState = "O"   // Ship position that was missed (same as miss)
+	Empty    CellState = " " // Untargeted
+	Miss     CellState = "O" // Missed shot
+	Hit      CellState = "X" // Hit shot
+	Ship     CellState = "S" // Ship position (hidden in opponent view)
+	ShipHit  CellState = "*" // Ship position that was hit
+	ShipMiss CellState = "O" // Ship position that was missed (same as miss)
 )
 
 // NewBoard creates a new board with the specified dimensions
@@ -78,7 +78,7 @@ func (b *Board) PlaceShip(ship Ship) error {
 		if !b.IsValid(pos.Row, pos.Column) {
 			return fmt.Errorf("invalid position: (%d, %d)", pos.Row, pos.Column)
 		}
-		
+
 		// Check if position is already occupied
 		if b.Cells[pos.Row][pos.Column] != Empty {
 			return fmt.Errorf("position (%d, %d) is already occupied", pos.Row, pos.Column)
@@ -128,14 +128,14 @@ func (b *Board) GetActiveShipsCount() int {
 // Display returns a string representation of the board for debugging
 func (b *Board) Display() string {
 	var result string
-	
+
 	// Column headers
 	result += "   "
 	for i := 0; i < b.Columns; i++ {
 		result += fmt.Sprintf("%2d ", i)
 	}
 	result += "\n"
-	
+
 	// Board rows
 	for i := 0; i < b.Rows; i++ {
 		result += fmt.Sprintf("%2d ", i)
@@ -144,6 +144,6 @@ func (b *Board) Display() string {
 		}
 		result += "\n"
 	}
-	
+
 	return result
 }

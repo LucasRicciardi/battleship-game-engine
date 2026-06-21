@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -13,7 +12,6 @@ import (
 	"battleship-game-engine/config"
 	"battleship-game-engine/lib/logger"
 	"battleship-game-engine/lib/tracing"
-	"battleship-game-engine/lib/metrics"
 	"battleship-game-engine/src/adapters/gin"
 )
 
@@ -30,9 +28,6 @@ func main() {
 		logger.Errorf("Failed to initialize tracing: %v", err)
 	}
 	defer tracing.Shutdown()
-	
-	// Initialize metrics
-	logger.Info("Metrics initialized")
 	
 	// Create router
 	router := gin.NewRouter()
